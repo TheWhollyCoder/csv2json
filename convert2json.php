@@ -2,6 +2,9 @@
 // ***** Upload CSV File *****
 //Check if a File was submited
 if(isset($_POST['upload'])){
+  // echo('<pre>');
+  // print_r($_FILES);
+  // echo('</pre>');
   include('functlib.php');
   $t=time();
   $week = $_POST['week'];
