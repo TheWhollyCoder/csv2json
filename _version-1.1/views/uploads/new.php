@@ -1,5 +1,5 @@
 <?php
-require('../../../../__CONNECT/myb4g-connect.php');
+require('../../../../__CONNECT/recapp-connect.php');
 // if($connection){echo('Yep!!!');}
  ?>
 <!DOCTYPE html>

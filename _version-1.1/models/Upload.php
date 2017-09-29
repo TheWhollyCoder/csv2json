@@ -1,12 +1,15 @@
 <?php
 class Upload{
   public $connection;
+  public $db_name = 'recapp';
   public $time;
   public $week;
   public $filename;
   public $tmp_file;
   public $temp_table;
   public $handle;
+  public $data;
+  public $json;
 
   public function __construct($properties){
     $this->connection = $properties['connection'];
@@ -27,7 +30,7 @@ class Upload{
   }
 
   public function create_temp_table(){
-    $sql = "CREATE TABLE IF NOT EXISTS `mybod4god`.`".$this->temp_table."` (
+    $sql = "CREATE TABLE IF NOT EXISTS `".$this->db_name."`.`".$this->temp_table."` (
       `weigh_in_id` INT NOT NULL AUTO_INCREMENT ,
       `weigh_in_competitor_id` INT NOT NULL ,
       `weigh_in_firstname` VARCHAR(255) NOT NULL ,
@@ -44,23 +47,25 @@ class Upload{
     }
 
     public function get_data(){
-      $sql = "SELECT * FROM `mybod4god`.`".$this->temp_table."`;";
+      $sql = "SELECT * FROM `".$this->db_name."`.`".$this->temp_table."`;";
       $result = $this->process_query($sql);
-      $competition_data = array();
+      $this->data = array();
       while($row = mysqli_fetch_array($result)){
-        $competition_data[] = array(
+        $this->data[] = array(
           'weigh_id'        =>  $row['weigh_in_id'],
           'competitor_id'   =>  $row['weigh_in_competitor_id'],
-          'firstname'       =>  $row['weigh_in_firstname'],
-          'lastname'        =>  $row['weigh_in_lastname'],
+          'TeamID'          =>  $row['weigh_in_team_id'],
+          'week'            =>  $row['weigh_in_week'],
           'begin'           =>  $row['weigh_in_begin'],
           'previous'        =>  $row['weigh_in_previous'],
           'current'         =>  $row['weigh_in_current'],
-          'TeamID'          =>  $row['weigh_in_team_id'],
-          'week'            =>  $row['weigh_in_week']
+          'firstname'       =>  $row['weigh_in_firstname'],
+          'lastname'        =>  $row['weigh_in_lastname']
         );
       }
-      return json_encode($competition_data);
+
+          $this->json = json_encode($this->data);
+      return $this->json;
     }
 
     public function get_temp_table_name(){
@@ -72,14 +77,14 @@ class Upload{
       $this->create_temp_table();
       while($data = fgetcsv($this->handle)){
         $weigh_in_competitor_id = mysqli_real_escape_string($this->connection, $data[0]);
-        $weigh_in_firstname     = mysqli_real_escape_string($this->connection, $data[1]);
-        $weigh_in_lastname      = mysqli_real_escape_string($this->connection, $data[2]);
+        $weigh_in_firstname     = mysqli_real_escape_string($this->connection, $data[6]);
+        $weigh_in_lastname      = mysqli_real_escape_string($this->connection, $data[7]);
         $weigh_in_begin         = mysqli_real_escape_string($this->connection, $data[3]);
         $weigh_in_previous      = mysqli_real_escape_string($this->connection, $data[4]);
         $weigh_in_current       = mysqli_real_escape_string($this->connection, $data[5]);
-        $weigh_in_team_id       = mysqli_real_escape_string($this->connection, $data[6]);
-        $weigh_in_week          = mysqli_real_escape_string($this->connection, $data[7]);
-        $sql                    = "INSERT INTO `mybod4god`.`".$this->temp_table."` (
+        $weigh_in_team_id       = mysqli_real_escape_string($this->connection, $data[1]);
+        $weigh_in_week          = mysqli_real_escape_string($this->connection, $data[2]);
+        $sql                    = "INSERT INTO `".$this->db_name."`.`".$this->temp_table."` (
           `weigh_in_id`,
           `weigh_in_competitor_id`,
           `weigh_in_firstname`,
@@ -115,6 +120,7 @@ class Upload{
 
     public function set_file_handle(){
       $this->handle = fopen($this->tmp_file, "r");
+      if($this->handle){echo('*** FILE HANDLE IS SET!!! ***<br>');}
     }
 
 }

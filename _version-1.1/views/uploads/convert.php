@@ -1,10 +1,15 @@
 <?php
-require('../../../../__CONNECT/myb4g-connect.php');
+// ***** Require Database Connection *****
+require('../../../../__CONNECT/recapp-connect.php');
+// ***** Require Upload Module *****
 require('../../models/Upload.php');
 // ***** Upload CSV File *****
 //Check if a File was submited
 if(isset($_POST['upload_csv'])){
   if($_FILES['file']['name']){
+    // echo('<pre>');
+    // print_r($_FILES);
+    // echo('</pre>');
     echo('>>> File Upload Successful...<br>');
   }else{
     echo('>>>No Files Array to print...<br>');
@@ -19,13 +24,19 @@ $properties = array(
   'filename'      =>    $filename,
   'tmp_file'      =>    $tmp_file
 );
+
+// echo('<pre>');
+// print_r($properties);
+// echo('</pre>');
+
 // ***** Instantiate Upload Object *****
 $upload = new Upload($properties);
-                // echo('<pre>');
-                // print_r($upload);
-                // echo('</pre>');
+
+echo('Temporary Table Name: '.$upload->temp_table.'<br>');
+
 // Check if file is CSV
 if($upload->check_if_csv($upload->filename)){
+  echo('*** THIS IS A CSV FILE!!! ***<br>');
   // Open Temporary File to Read Contents
   $upload->set_file_handle();
   //Insert data into MySQL
@@ -39,6 +50,11 @@ if($upload->check_if_csv($upload->filename)){
   $retrieved_data = $upload->get_data();
   //Create JSON File
   if($retrieved_data){
+
+    // echo('<pre>');
+    // print_r($retrieved_data);
+    // echo('</pre>');
+
     if(file_put_contents($data_filename, $retrieved_data)){
       echo('>>> '.$data_filename . ' file created');
     }else{
@@ -50,7 +66,7 @@ if($upload->check_if_csv($upload->filename)){
 
 //Download JSON data
   echo('<br><a href="'.$data_filename.'" target="_blank">Download JSON File</a>');
-  echo('<br><a href="upload.php" target="_blank">Convert Another File</a>');
+  echo('<br><a href="./new.php" target="_blank">Convert Another File</a>');
   echo('<br><a href="results.php?week='.$upload->week.'" target="_blank">View Week '.$upload->week.' Results</a>');
 }
  ?>
